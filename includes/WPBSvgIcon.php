@@ -89,6 +89,12 @@ if ( !class_exists( 'WPBSvgIcon' ) ) {
 	                ),
 
 	                array(
+	                    'type' 			=> 'vc_link',
+	                    'param_name' 	=> 'icon_link',
+	                    'heading' 		=> esc_html__( 'Icon Link', 'wpb-svg-icon' ),
+	                ),
+
+	                array(
 	                    'type'			=> 'textfield',
 	                    'heading'		=> esc_html__( 'Icon Size', 'wpb-svg-icon' ),
 	                    'param_name'	=> 'icon_size',
@@ -137,6 +143,7 @@ if ( !class_exists( 'WPBSvgIcon' ) ) {
 	            'icon_background'	=> '#ffffff',
 	            'icon_radius'		=> 'rounded',
 	            'icon_size'			=> '16px',
+	            'icon_link'			=> '',
 	            // 'icon_source'	=> 'code',
 	            'icon_code'			=> '',
 	            'custom_class'		=> ''
@@ -156,6 +163,12 @@ if ( !class_exists( 'WPBSvgIcon' ) ) {
 	        $icon_code = rawurldecode( base64_decode( wp_strip_all_tags( $icon_code ) ) );
 			$icon_code = wpb_js_remove_wpautop( apply_filters( 'vc_raw_html_module_content', $icon_code ) );
 
+			$icon_link = vc_build_link( $atts[ 'icon_link' ] );
+			$icon_link_url = esc_url( $icon_link[ 'url' ] );
+			$icon_link_target = $icon_link[ 'target' ];
+			$icon_link_rel = $icon_link[ 'rel' ];
+
+			// icon class state
 			$icon_classes = array();
 			$icon_classes[] = 'wpb-svgi';
 			if ( $variant == 'filled' ) {
@@ -172,6 +185,7 @@ if ( !class_exists( 'WPBSvgIcon' ) ) {
 				$icon_classes[] = esc_attr( $custom_class );
 			}
 
+			// icon css variables
 			$icon_styles = array();
 			$icon_styles[] = '--icon-size:'. esc_attr( $icon_size ) .';';
 			$icon_styles[] = '--icon-color:'. esc_attr( $icon_color ) .';';
@@ -179,8 +193,25 @@ if ( !class_exists( 'WPBSvgIcon' ) ) {
 				$icon_styles[] = '--icon-bg-color:'. esc_attr( $icon_background ) .';';
 			}
 
+			$icon_wrapper_tag = !empty( $icon_link_url ) ? 'a' : 'span';
+			$icon_attrs = array();
+			$icon_attrs[] = 'class="'. implode( ' ', $icon_classes) .'"';
+			$icon_attrs[] = 'aria-label="'. $label .'"';
+			if ( !empty( $icon_link_url ) ) {
+				$icon_attrs[] = 'href="'. $icon_link_url .'"';
+
+				if ( !empty( $icon_link_target ) ) {
+					$icon_attrs[] = 'target="'. $icon_link_target .'"';
+				}
+
+				if ( !empty( $icon_link_rel ) ) {
+					$icon_attrs[] = 'rel="'. $icon_link_rel .'"';
+				}
+			}
+			$icon_attrs[] = 'style="'. implode( ' ', $icon_styles) .'"';
+
 	        $output = '';
-	        $output .= '<span class="'. implode( ' ', $icon_classes) .'" aria-label="'. $label .'" style="'. implode( ' ', $icon_styles) .'">' . $icon_code . '</span>';
+	        $output .= '<'. $icon_wrapper_tag .' '. implode( '', $icon_attrs ) .'>' . $icon_code . '</'. $icon_wrapper_tag .'>';
 
 	        return $output;
 		}
